@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-import pandas as pd
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session
 from flask_cors import CORS
 import firebase_admin
