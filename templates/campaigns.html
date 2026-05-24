@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DMA | Campaigns Intelligence</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+<style>
+:root {
+    --forest-deepest: #060F0C;
+    --forest-deep:    #0A1F1A;
+    --forest-mid:     #132B23;
+    --forest-panel:   #0E2520;
+    --emerald:        #34D399;
+    --emerald-dim:    #1A8C62;
+    --emerald-lt:     #D1FAE5;
+    --emerald-glow:   rgba(52,211,153,0.18);
+    --gold:           #A3E635;
+    --gold-dim:       #84cc16;
+    --paper:          #F4F9F6;
+    --paper-2:        #E8F4EE;
+    --ink:            #0A1F1A;
+    --ink-2:          #1F4038;
+    --ink-3:          #5A8C78;
+    --card:           #FFFFFF;
+    --line:           #C5DFD4;
+    --line-dim:       rgba(52,211,153,0.15);
+    --red:            #EF4444;
+    --red-lt:         #FEF2F2;
+    --text-on-dark:   rgba(255,255,255,0.92);
+    --text-muted:     rgba(255,255,255,0.42);
+    --text-dim:       rgba(255,255,255,0.22);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; min-height: 100%; }
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(20px) saturate(1.3);
+    border-bottom: 1px solid var(--line);
+    padding: 0 40px; height: 62px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    overflow: hidden;
+}
+.topbar::before {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--emerald-dim), var(--emerald), var(--gold-dim), var(--emerald));
+    background-size: 200% 100%;
+    animation: shimmer 4s linear infinite;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.topbar::after {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(52,211,153,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(52,211,153,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridDrift 24s linear infinite; pointer-events: none;
+}
+@keyframes gridDrift { 0% { background-position: 0 0; } 100% { background-position: 48px 48px; } }
+
+.brand { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; text-decoration: none; }
+.brand-mark {
+    width: 36px; height: 36px; border: 1px solid var(--emerald-dim);
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(10% 0%, 90% 0%, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0% 90%, 0% 10%);
+    background: rgba(26,140,98,0.08); flex-shrink: 0;
+}
+.brand-mark span { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 700; color: var(--emerald-dim); line-height: 1; }
+.brand-text .name { font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 600; color: var(--ink); letter-spacing: 0.08em; text-transform: uppercase; }
+.brand-text .sub  { font-family: 'DM Mono', monospace; font-size: 0.44rem; color: var(--ink-3); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 1px; }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+
+.btn-export {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 8px 16px;
+    border-radius: 100px;
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.52rem; font-weight: 500;
+    color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.12em;
+    cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    background: none; outline: none;
+}
+.btn-export:hover { border-color: var(--emerald-dim); color: var(--emerald-dim); }
+.btn-export svg { stroke: currentColor; flex-shrink: 0; }
+
+.ai-chip {
+    background: var(--paper); border: 1px solid var(--line); padding: 7px 14px; border-radius: 100px;
+    display: flex; align-items: center; gap: 9px;
+    font-family: 'DM Mono', monospace; font-size: 0.54rem; font-weight: 500;
+    color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap;
+    transition: border-color 0.2s;
+}
+.ai-chip:hover { border-color: var(--emerald-dim); }
+.dot { width: 7px; height: 7px; background: var(--emerald); border-radius: 50%; box-shadow: 0 0 8px rgba(52,211,153,0.7); animation: pulse 2s ease-in-out infinite; flex-shrink: 0; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.75); } }
+
+/* ── CONTENT ── */
+.content { padding: 32px 40px 56px; }
+
+.page-heading { margin-bottom: 28px; opacity: 0; animation: rise 0.7s 0.1s ease forwards; }
+.page-kicker {
+    font-family: 'DM Mono', monospace; font-size: 0.5rem; color: var(--emerald-dim);
+    text-transform: uppercase; letter-spacing: 0.22em;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.page-kicker::before { content: ''; width: 18px; height: 1px; background: var(--emerald-dim); }
+.page-title { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 700; color: var(--ink); line-height: 1; letter-spacing: -0.01em; }
+.page-title em { font-style: italic; color: var(--emerald-dim); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── KPI GRID ── */
+.kpi-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-bottom: 24px;
+    opacity: 0; animation: rise 0.7s 0.2s ease forwards;
+}
+
+.glass-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 22px 20px 18px; position: relative; overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s; cursor: default;
+}
+.glass-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.glass-card:nth-child(1)::before { background: linear-gradient(90deg, var(--emerald-dim), var(--emerald)); }
+.glass-card:nth-child(2)::before { background: linear-gradient(90deg, var(--emerald-dim), var(--gold)); }
+.glass-card:nth-child(3)::before { background: linear-gradient(90deg, #3B82F6, #60A5FA); }
+.glass-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 60%, rgba(52,211,153,0.04) 100%); pointer-events: none; }
+.glass-card:hover { box-shadow: 0 6px 24px rgba(10,31,26,0.08); transform: translateY(-3px); }
+
+.kpi-label { font-family: 'DM Mono', monospace; font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-3); margin-bottom: 10px; }
+.kpi-value { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); line-height: 1; }
+#avgROI { color: var(--emerald-dim); }
+
+/* ── TABLE CONTAINER ── */
+.table-wrap {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    overflow: hidden; position: relative;
+    opacity: 0; animation: rise 0.7s 0.35s ease forwards;
+    transition: box-shadow 0.2s;
+}
+.table-wrap:hover { box-shadow: 0 4px 20px rgba(10,31,26,0.06); }
+.table-wrap::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--line), transparent); }
+
+.table-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--line); }
+.table-title { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+.table-title em { font-style: italic; color: var(--emerald-dim); }
+.table-sub { font-family: 'DM Mono', monospace; font-size: 0.46rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-3); margin-top: 4px; display: flex; align-items: center; gap: 7px; }
+.table-sub::before { content: ''; width: 12px; height: 1px; background: var(--emerald-dim); }
+
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+table { width: 100%; border-collapse: collapse; min-width: 700px; }
+
+thead tr { background: var(--paper-2); }
+th {
+    text-align: left; padding: 12px 24px;
+    font-family: 'DM Mono', monospace; font-size: 0.46rem;
+    text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-3);
+    border-bottom: 1px solid var(--line); font-weight: 500;
+}
+td { padding: 16px 24px; border-bottom: 1px solid var(--line); font-size: 0.9rem; color: var(--ink); }
+tr:last-child td { border-bottom: none; }
+tbody tr { transition: background 0.15s; }
+tbody tr:hover td { background: rgba(52,211,153,0.04); }
+
+.campaign-name-cell { font-weight: 600; color: var(--emerald-dim); }
+.positive { color: var(--emerald-dim); font-weight: 600; font-family: 'DM Mono', monospace; }
+.negative { color: var(--red); font-weight: 600; font-family: 'DM Mono', monospace; }
+.mono { font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--ink-2); }
+
+/* ── FOOTER SYS BAR ── */
+.sys-bar {
+    position: sticky; bottom: 0;
+    background: var(--forest-deep); padding: 10px 40px;
+    display: flex; flex-wrap: wrap; gap: 0;
+    font-family: 'DM Mono', monospace; font-size: 0.48rem;
+    color: var(--text-dim); border-top: 1px solid rgba(52,211,153,0.1); z-index: 90;
+}
+.sys-bar::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--emerald-dim), transparent); opacity: 0.35; }
+.sys-seg { padding: 0 14px; border-right: 1px solid rgba(52,211,153,0.08); }
+.sys-seg:first-child { padding-left: 0; }
+.sys-seg:last-child  { border-right: none; margin-left: auto; }
+.sys-seg b { color: var(--emerald); font-weight: 500; }
+.sys-seg .ok { color: #34D399; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) {
+    .topbar  { padding: 0 20px; }
+    .content { padding: 22px 20px 48px; }
+    .kpi-grid { grid-template-columns: 1fr; gap: 12px; }
+    .kpi-value { font-size: 2rem; }
+    .glass-card { padding: 18px 16px; }
+    .sys-bar { padding: 10px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+    <a class="brand" href="#">
+        <div class="brand-mark"><span>D</span></div>
+        <div class="brand-text">
+            <div class="name">DMA Platform</div>
+            <div class="sub">Digital Marketing Analytics</div>
+        </div>
+    </a>
+    <div class="topbar-right">
+        <button class="btn-export" onclick="exportCSV()">
+            <svg width="13" height="13" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export CSV
+        </button>
+        <div class="ai-chip"><div class="dot"></div><span id="insight">SYNCING_CORE...</span></div>
+    </div>
+</header>
+
+<!-- CONTENT -->
+<div class="content">
+
+    <div class="page-heading">
+        <div class="page-kicker">Live · Campaign Matrix · 12ms</div>
+        <h1 class="page-title">Campaign <em>Intelligence</em></h1>
+    </div>
+
+    <section class="kpi-grid">
+        <div class="glass-card">
+            <div class="kpi-label">Active Campaigns</div>
+            <div class="kpi-value" id="totalCampaigns">0</div>
+        </div>
+        <div class="glass-card">
+            <div class="kpi-label">Total Spend</div>
+            <div class="kpi-value" id="totalSpend">$0</div>
+        </div>
+        <div class="glass-card">
+            <div class="kpi-label">Avg Efficiency</div>
+            <div class="kpi-value" id="avgROI">0%</div>
+        </div>
+    </section>
+
+    <div class="table-wrap">
+        <div class="table-header">
+            <div class="table-title">Campaign <em>Performance</em> Breakdown</div>
+            <div class="table-sub">Live spend & conversion data</div>
+        </div>
+        <div class="table-scroll">
+            <table id="campaignTable">
+                <thead>
+                    <tr>
+                        <th>Campaign Name</th>
+                        <th>Spend Allocation</th>
+                        <th>Interactions</th>
+                        <th>Conversions</th>
+                        <th>ROI Efficiency</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- FOOTER SYS BAR -->
+<div class="sys-bar">
+    <div class="sys-seg">SYS <b>v2.4.1</b></div>
+    <div class="sys-seg">STATUS <b class="ok">ONLINE</b></div>
+    <div class="sys-seg">TLS <b>1.3</b></div>
+    <div class="sys-seg">LATENCY <b>12ms</b></div>
+    <div class="sys-seg">MODULE <b>CAMPAIGNS</b></div>
+    <div class="sys-seg">LAST SYNC <b>00:00:42 AGO</b></div>
+</div>
+
+<!-- ALL ORIGINAL JS — COMPLETELY UNCHANGED -->
+<script>
+const State = {
+    data: { campaigns: [], products: [], traffic: [], conversions: [] }
+};
+
+async function loadCSV(){
+    const files = ["campaigns", "products", "traffic", "conversions"];
+    for(let f of files){
+        try {
+            const res = await fetch(`/static/data/${f}.csv`);
+            if(!res.ok) continue;
+            const text = await res.text();
+            State.data[f] = parseCSV(text);
+        } catch(e) { console.error("ERR_LOAD:", f); }
+    }
+    render();
+}
+
+function parseCSV(text){
+    const rows = text.trim().split("\n");
+    if(rows.length < 2) return [];
+    const headers = rows[0].split(",").map(h => h.trim());
+    return rows.slice(1).map(r => {
+        const values = r.split(",");
+        let obj = {};
+        headers.forEach((h, i) => { obj[h.trim()] = (values[i] ?? "").trim(); });
+        return obj;
+    }).filter(r => Object.keys(r).length > 0);
+}
+
+function render(){
+    const { campaigns, products, traffic, conversions } = State.data;
+    let totalSpend = 0, totalROI = 0;
+    const tbody = document.querySelector("#campaignTable tbody");
+    tbody.innerHTML = "";
+
+    campaigns.forEach(c => {
+        const spend = Number(c.spend || 0);
+        const revenue = products.filter(p => p.campaign_name === c.campaign_name)
+                                .reduce((s, p) => s + (Number(p.price||0) * Number(p.sales||0)), 0);
+        const roi = spend ? ((revenue-spend)/spend)*100 : 0;
+        totalSpend += spend;
+        totalROI += roi;
+
+        const clicks = traffic.filter(t => t.campaign_name === c.campaign_name)
+                              .reduce((s, t) => s + (Number(t.clicks)||0), 0);
+        const conv = conversions.filter(x => x.campaign_name === c.campaign_name)
+                                .reduce((s, x) => s + (Number(x.conversions)||0), 0);
+
+        tbody.innerHTML += `
+        <tr>
+            <td class="campaign-name-cell">${c.campaign_name}</td>
+            <td class="mono">$${spend.toLocaleString()}</td>
+            <td class="mono">${clicks.toLocaleString()}</td>
+            <td class="mono">${conv.toLocaleString()}</td>
+            <td class="${roi >= 0 ? 'positive' : 'negative'}">
+                ${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%
+            </td>
+        </tr>`;
+    });
+
+    document.getElementById("totalCampaigns").innerText = campaigns.length;
+    document.getElementById("totalSpend").innerText = "$" + totalSpend.toLocaleString();
+    document.getElementById("avgROI").innerText = (campaigns.length ? (totalROI / campaigns.length).toFixed(1) : 0) + "%";
+
+    const insights = ["OPTIMIZED", "SCALING", "STABLE", "SYNCED"];
+    document.getElementById("insight").innerText = insights[Math.floor(Math.random()*insights.length)];
+}
+
+function exportCSV(){
+    let csv = [];
+    const rows = document.querySelectorAll("#campaignTable tr");
+    rows.forEach(r => {
+        let cols = r.querySelectorAll("td, th"), row = [];
+        cols.forEach(c => row.push(c.innerText));
+        csv.push(row.join(","));
+    });
+    const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "AETHER_CAMPAIGN_DATA.csv";
+    a.click();
+}
+
+loadCSV();
+</script>
+</body>
+</html>

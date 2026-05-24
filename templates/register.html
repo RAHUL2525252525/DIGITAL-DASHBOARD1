@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=no">
+    <title>DMA | Create Account</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --forest-deepest: #060F0C;
+            --forest-deep:    #0A1F1A;
+            --forest-mid:     #132B23;
+            --emerald:        #34D399;
+            --emerald-dim:    #1A8C62;
+            --emerald-lt:     #D1FAE5;
+            --emerald-glow:   rgba(52,211,153,0.12);
+            --emerald-border: rgba(52,211,153,0.18);
+            --emerald-strong: rgba(52,211,153,0.45);
+            --gold:           #A3E635;
+            --paper:          #F4F9F6;
+            --paper-2:        #EBF5EF;
+            --ink:            #0A1F1A;
+            --ink-2:          #1F4038;
+            --ink-3:          #5A8C78;
+            --card:           #FFFFFF;
+            --line:           #C5DFD4;
+            --red:            #EF4444;
+            --red-lt:         rgba(239,68,68,0.07);
+            --red-border:     rgba(239,68,68,0.28);
+            --text-on-dark:   rgba(255,255,255,0.92);
+            --text-muted:     rgba(255,255,255,0.42);
+            --text-dim:       rgba(255,255,255,0.22);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; overflow: hidden; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--forest-deepest);
+            color: var(--ink);
+            display: flex;
+            align-items: stretch;
+        }
+
+        /* ── VIDEO BACKGROUND ── */
+        .video-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .video-bg video {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0.18;
+            filter: hue-rotate(120deg) saturate(1.4) brightness(0.7);
+        }
+        .video-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 50%, rgba(10,31,26,0.55) 0%, transparent 70%),
+                linear-gradient(135deg, rgba(6,15,12,0.92) 0%, rgba(13,37,32,0.85) 50%, rgba(6,15,12,0.95) 100%);
+        }
+
+        /* ── SCANLINES ── */
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background-image: repeating-linear-gradient(
+                0deg, transparent, transparent 2px,
+                rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px
+            );
+            pointer-events: none;
+        }
+
+        /* ── LAYOUT ── */
+        .layout {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: 1fr 460px;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* ══════════════════════════════
+           LEFT PANEL
+        ══════════════════════════════ */
+        .left {
+            display: flex;
+            flex-direction: column;
+            padding: 3rem 3.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated grid */
+        .left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(52,211,153,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(52,211,153,0.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+            animation: gridDrift 24s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes gridDrift {
+            0%   { background-position: 0 0; }
+            100% { background-position: 48px 48px; }
+        }
+
+        /* Right border glow */
+        .left::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 8%; bottom: 8%;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, var(--emerald-border) 30%, rgba(52,211,153,0.3) 50%, var(--emerald-border) 70%, transparent);
+        }
+
+        /* ── Logo ── */
+        .logo {
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: auto;
+            opacity: 0;
+            animation: rise 0.8s 0.1s ease forwards;
+        }
+        .logo-mark {
+            width: 40px; height: 40px;
+            clip-path: polygon(10% 0%, 90% 0%, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0% 90%, 0% 10%);
+            background: rgba(52,211,153,0.1);
+            border: 1px solid var(--emerald-border);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .logo-mark svg { width: 22px; height: 22px; }
+        .logo-name { font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; color: var(--text-on-dark); letter-spacing: 0.1em; text-transform: uppercase; }
+        .logo-sub  { font-family: 'DM Mono', monospace; font-size: 0.5rem; color: var(--ink-3); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 2px; }
+
+        /* ── Hero ── */
+        .hero { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+        .live-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--emerald-glow);
+            border: 1px solid var(--emerald-border);
+            padding: 5px 14px;
+            border-radius: 100px;
+            width: fit-content;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: rise 0.8s 0.2s ease forwards;
+        }
+        .live-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 8px rgba(52,211,153,0.5);
+            animation: livePulse 2s ease-in-out infinite;
+        }
+        @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.85)} }
+        .live-pill span { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--emerald); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3.6rem, 5.5vw, 6.4rem);
+            font-weight: 700;
+            line-height: 0.92;
+            letter-spacing: -0.01em;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            animation: rise 0.9s 0.3s ease forwards;
+        }
+        .line-wh  { color: var(--text-on-dark); display: block; }
+        .line-em  { color: var(--emerald); display: block; font-style: italic; }
+        .line-dim { color: rgba(255,255,255,0.2); display: block; font-weight: 400; }
+
+        .hero-desc {
+            font-size: 0.87rem; color: var(--text-muted);
+            line-height: 1.8; max-width: 380px;
+            font-weight: 300;
+            margin-bottom: 2.5rem;
+            opacity: 0;
+            animation: rise 0.8s 0.38s ease forwards;
+        }
+
+        /* ── Feature list ── */
+        .feature-list {
+            display: flex; flex-direction: column; gap: 11px;
+            margin-bottom: 2.5rem;
+            opacity: 0;
+            animation: rise 0.8s 0.45s ease forwards;
+        }
+        .feature-item {
+            display: flex; align-items: center; gap: 13px;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.64rem; color: var(--text-muted);
+        }
+        .feature-icon {
+            width: 30px; height: 30px;
+            background: var(--emerald-glow);
+            border: 1px solid var(--emerald-border);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            color: var(--emerald);
+        }
+        .feature-item strong { color: var(--text-on-dark); font-weight: 500; }
+
+        /* ── Steps ── */
+        .steps-row {
+            display: flex; align-items: center; gap: 0;
+            margin-bottom: 2.5rem;
+            opacity: 0;
+            animation: rise 0.8s 0.52s ease forwards;
+        }
+        .step-item {
+            display: flex; align-items: center; gap: 7px;
+            font-family: 'DM Mono', monospace; font-size: 0.58rem;
+            color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em;
+        }
+        .step-num {
+            width: 22px; height: 22px; border-radius: 50%;
+            border: 1px solid rgba(52,211,153,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.52rem; color: var(--text-dim);
+        }
+        .step-item.active .step-num { background: var(--emerald); color: #fff; border-color: var(--emerald); }
+        .step-item.active { color: var(--emerald); }
+        .step-connector { flex: 1; height: 1px; background: rgba(52,211,153,0.15); margin: 0 10px; min-width: 24px; }
+
+        /* ── Terminal bar ── */
+        .terminal {
+            display: flex; flex-wrap: wrap; gap: 0;
+            font-family: 'DM Mono', monospace; font-size: 0.5rem; color: var(--text-dim);
+            border-top: 1px solid rgba(52,211,153,0.1);
+            padding-top: 1.25rem;
+            opacity: 0;
+            animation: rise 0.8s 0.6s ease forwards;
+        }
+        .t-seg { padding: 0 14px; border-right: 1px solid rgba(52,211,153,0.08); }
+        .t-seg:first-child { padding-left: 0; }
+        .t-seg:last-child { border-right: none; }
+        .t-seg .t-val { color: var(--emerald); }
+
+        /* ══════════════════════════════
+           RIGHT AUTH PANEL
+        ══════════════════════════════ */
+        .right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 2.5rem;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(24px) saturate(1.2);
+            border-left: 1px solid rgba(52,211,153,0.15);
+            overflow-y: auto;
+            position: relative;
+        }
+        /* Shimmer top bar */
+        .right::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--emerald-dim, #1A8C62), var(--emerald), var(--gold), var(--emerald));
+            background-size: 200% 100%;
+            animation: shimmer 4s linear infinite;
+        }
+        @keyframes shimmer { 0%{ background-position: 200% 0; } 100%{ background-position: -200% 0; } }
+
+        .auth-box { width: 100%; max-width: 360px; padding: 1rem 0; }
+
+        .auth-eyebrow {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.54rem; color: var(--emerald-dim);
+            text-transform: uppercase; letter-spacing: 0.2em;
+            margin-bottom: 8px;
+            display: flex; align-items: center; gap: 8px;
+            opacity: 0;
+            animation: rise 0.6s 0.15s ease forwards;
+        }
+        .auth-eyebrow::before { content: ''; width: 18px; height: 1px; background: var(--emerald-dim); }
+
+        .auth-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.75rem; font-weight: 700;
+            color: var(--ink); line-height: 1;
+            margin-bottom: 6px;
+            letter-spacing: -0.01em;
+            opacity: 0;
+            animation: rise 0.6s 0.22s ease forwards;
+        }
+        .auth-sub {
+            font-size: 0.82rem; color: var(--ink-3);
+            font-weight: 300; margin-bottom: 1.75rem; line-height: 1.65;
+            opacity: 0;
+            animation: rise 0.6s 0.28s ease forwards;
+        }
+
+        /* ── Error ── */
+        #regError {
+            display: none;
+            background: var(--red-lt);
+            border: 1px solid var(--red-border);
+            border-left: 3px solid var(--red);
+            border-radius: 0 6px 6px 0;
+            padding: 10px 14px;
+            margin-bottom: 1.25rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.6rem; color: var(--red);
+        }
+
+        /* ── Fields ── */
+        .field { margin-bottom: 0.9rem; opacity: 0; animation: rise 0.6s ease forwards; }
+        .field:nth-child(1) { animation-delay: 0.32s; }
+        .field:nth-child(2) { animation-delay: 0.38s; }
+        .field:nth-child(3) { animation-delay: 0.44s; }
+        .field:nth-child(4) { animation-delay: 0.50s; }
+
+        .field-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+        .field-label span {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.58rem; color: var(--ink-2);
+            text-transform: uppercase; letter-spacing: 0.1em;
+        }
+
+        .input-wrap { position: relative; display: flex; align-items: center; }
+        .input-ico {
+            position: absolute; left: 14px;
+            color: var(--ink-3); pointer-events: none;
+            display: flex; align-items: center;
+            transition: color 0.2s;
+        }
+        .input-wrap:focus-within .input-ico { color: var(--emerald-dim); }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            background: var(--paper);
+            border: 1.5px solid var(--line);
+            border-radius: 6px;
+            color: var(--ink);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            padding: 13px 14px 13px 44px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        input::placeholder { color: var(--ink-3); font-weight: 300; }
+        input:focus {
+            border-color: var(--emerald-strong);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(52,211,153,0.1);
+        }
+
+        .eye-btn {
+            position: absolute; right: 12px;
+            background: none; border: none;
+            color: var(--ink-3); cursor: pointer;
+            padding: 5px; display: flex; align-items: center;
+            transition: color 0.2s;
+        }
+        .eye-btn:hover { color: var(--ink-2); }
+
+        /* ── Primary CTA ── */
+        .btn-primary {
+            width: 100%;
+            background: var(--forest-deep);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 14px 20px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.86rem; font-weight: 600;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
+            position: relative; overflow: hidden;
+            margin-top: 0.4rem; margin-bottom: 0.8rem;
+            opacity: 0;
+            animation: rise 0.6s 0.56s ease forwards;
+        }
+        .btn-primary::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(52,211,153,0.15) 100%);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .btn-primary:hover { background: var(--ink-2); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,31,26,0.25); }
+        .btn-primary:hover::before { opacity: 1; }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-arrow-wrap {
+            width: 30px; height: 30px;
+            background: rgba(52,211,153,0.18);
+            border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--emerald);
+        }
+
+        /* ── Login row ── */
+        .reg-row {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.78rem; color: var(--ink-3);
+            opacity: 0;
+            animation: rise 0.6s 0.64s ease forwards;
+        }
+        .reg-row a { color: var(--emerald-dim); text-decoration: none; font-weight: 600; }
+        .reg-row a:hover { text-decoration: underline; }
+
+        /* ── Trust badges ── */
+        .trust-row {
+            display: flex; align-items: center; justify-content: center;
+            gap: 18px; margin-top: 1.25rem;
+            opacity: 0;
+            animation: rise 0.6s 0.72s ease forwards;
+        }
+        .trust-item {
+            display: flex; align-items: center; gap: 5px;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.5rem; color: var(--ink-3);
+            text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .trust-item svg { color: var(--emerald-dim); opacity: 0.7; }
+
+        /* ── Animation ── */
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Floating particles ── */
+        .particles { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+        .particle {
+            position: absolute;
+            font-family: 'DM Mono', monospace; font-size: 0.45rem;
+            color: var(--emerald); opacity: 0; white-space: nowrap;
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0%   { opacity: 0; transform: translateY(0); }
+            10%  { opacity: 0.3; }
+            90%  { opacity: 0.15; }
+            100% { opacity: 0; transform: translateY(-100vh); }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 1024px) {
+            .layout { grid-template-columns: 1fr; }
+            .left { display: none; }
+            .right { border-left: none; width: 100%; }
+        }
+        @media (max-width: 480px) { .right { padding: 1.5rem; } }
+    </style>
+</head>
+<body>
+
+<!-- ── VIDEO BACKGROUND ── -->
+<div class="video-bg">
+    <video autoplay muted loop playsinline>
+        <source src="https://cdn.coverr.co/videos/coverr-aerial-view-of-network-connection-nodes-9234/1080p.mp4" type="video/mp4">
+    </video>
+</div>
+<div class="scanlines"></div>
+
+<!-- ── FLOATING DATA PARTICLES ── -->
+<div class="particles" id="particles"></div>
+
+<div class="layout">
+
+    <!-- ══ LEFT DATA PANEL ══ -->
+    <div class="left">
+
+        <div class="logo">
+            <div class="logo-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4,17 9,12 13,16 20,8"/>
+                </svg>
+            </div>
+            <div>
+                <div class="logo-name">DMA Platform</div>
+                <div class="logo-sub">Digital Marketing Analytics</div>
+            </div>
+        </div>
+
+        <div class="hero">
+            <div class="live-pill">
+                <div class="live-dot"></div>
+                <span>New Identity · Bengaluru Zone · Free Tier</span>
+            </div>
+
+            <h1 class="hero-title">
+                <span class="line-wh">Create</span>
+                <span class="line-em">Your</span>
+                <span class="line-dim">Account.</span>
+            </h1>
+
+            <p class="hero-desc">
+                Join thousands of marketers who trust DMA to unify their campaign data, automate reporting, and make faster decisions at scale.
+            </p>
+
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+                    <div><strong>Real-time dashboards</strong> across all channels</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div><strong>Automated reports</strong> delivered on schedule</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div><strong>Enterprise-grade security</strong> from day one</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+                        </svg>
+                    </div>
+                    <div><strong>Free forever plan</strong> — no credit card required</div>
+                </div>
+            </div>
+
+            <div class="steps-row">
+                <div class="step-item active">
+                    <div class="step-num">1</div>
+                    <span>Register</span>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <span>Verify</span>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <span>Connect</span>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <span>Launch</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal">
+            <div class="t-seg">SYS <span class="t-val">v2.4.1</span></div>
+            <div class="t-seg">STATUS <span class="t-val">ONLINE</span></div>
+            <div class="t-seg">TLS <span class="t-val">1.3</span></div>
+            <div class="t-seg">LATENCY <span class="t-val">12ms</span></div>
+            <div class="t-seg">NODES <span class="t-val">247</span></div>
+        </div>
+    </div>
+
+    <!-- ══ RIGHT AUTH PANEL ══ -->
+    <div class="right">
+        <div class="auth-box">
+
+            <div class="auth-eyebrow">Digital Marketting Analytics</div>
+            <div class="auth-title">Create account</div>
+            <div class="auth-sub">Set up your analytics command center</div>
+
+            <div id="regError">
+                ⚠ &nbsp;REG FAILURE — <span id="errorDetails">UNKNOWN_ERROR</span>
+            </div>
+
+            <form id="regForm" autocomplete="on">
+
+                <div class="field">
+                    <div class="field-label"><span>Username</span></div>
+                    <div class="input-wrap">
+                        <span class="input-ico">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </span>
+                        <input type="text" id="username" placeholder="Username" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="field-label"><span>Email address</span></div>
+                    <div class="input-wrap">
+                        <span class="input-ico">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                        </span>
+                        <input type="email" id="email" placeholder="user@gmail.com" required autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="field-label"><span>New password</span></div>
+                    <div class="input-wrap">
+                        <span class="input-ico">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                        </span>
+                        <input type="password" id="password" placeholder="••••••••••••" required autocomplete="new-password">
+                        <button type="button" class="eye-btn" id="togglePassword1" aria-label="Toggle password visibility">
+                            <svg id="eyeIcon1" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="field-label"><span>Confirm password</span></div>
+                    <div class="input-wrap">
+                        <span class="input-ico">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                        </span>
+                        <input type="password" id="confirmPassword" placeholder="••••••••••••" required autocomplete="new-password">
+                        <button type="button" class="eye-btn" id="togglePassword2" aria-label="Toggle confirm password visibility">
+                            <svg id="eyeIcon2" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-primary" id="regBtn">
+                    <span>Create Account</span>
+                    <div class="btn-arrow-wrap">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </div>
+                </button>
+
+            </form>
+
+            <div class="reg-row">
+                Already have an account? <a href="{{ url_for('login_page') }}">Sign in →</a>
+            </div>
+
+            <div class="trust-row">
+                <div class="trust-item">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    <span>SOC 2 Type II</span>
+                </div>
+                <div class="trust-item">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <span>256-bit TLS</span>
+                </div>
+                <div class="trust-item">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>GDPR Ready</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ── PARTICLES ── -->
+<script>
+(function() {
+    const snippets = [
+        'CTR: 6.8%','ROAS: 4.3x','CPC: ₹12.4','CVR: 3.2%',
+        'CPM: ₹89','LTV: ₹4.2k','CAC: ₹320','ROI: 31%',
+        'REACH: 1.2M','CLICKS: 84k','LEADS: 2.1k','REV: ₹8.1L',
+        'FB: 42%','GOOG: 38%','ORG: 20%','BOUNCE: 28%',
+        '> SYNC','> TRACK','> ANALYZE','> REPORT',
+    ];
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 22; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.textContent = snippets[Math.floor(Math.random() * snippets.length)];
+        p.style.left = Math.random() * 65 + '%';
+        p.style.bottom = '-2rem';
+        p.style.animationDuration = (18 + Math.random() * 22) + 's';
+        p.style.animationDelay = (Math.random() * 20) + 's';
+        container.appendChild(p);
+    }
+})();
+</script>
+
+<!-- ── TOGGLE PASSWORD LOGIC — UNCHANGED ── -->
+<script>
+function setupEyeToggle(btnId, inputId, iconId) {
+    document.getElementById(btnId).addEventListener('click', () => {
+        const input = document.getElementById(inputId);
+        const icon  = document.getElementById(iconId);
+        const show  = input.getAttribute('type') === 'password';
+        input.setAttribute('type', show ? 'text' : 'password');
+        icon.innerHTML = show
+            ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`
+            : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
+    });
+}
+setupEyeToggle('togglePassword1', 'password', 'eyeIcon1');
+setupEyeToggle('togglePassword2', 'confirmPassword', 'eyeIcon2');
+</script>
+
+<!-- ── REGISTRATION LOGIC — UNCHANGED ── -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCC3IkeAr0q4D1MU7_K7MODofejVTSfOyc",
+        authDomain: "digital-dashboard-1be1a.firebaseapp.com",
+        projectId: "digital-dashboard-1be1a",
+        storageBucket: "digital-dashboard-1be1a.firebasestorage.app",
+        messagingSenderId: "516289925711",
+        appId: "1:516289925711:web:7eca40582781877b77d03a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const errorBox     = document.getElementById('regError');
+    const errorDetails = document.getElementById('errorDetails');
+
+    const showError = (msg) => {
+        errorBox.style.display = 'block';
+        errorDetails.innerText = msg.toUpperCase();
+    };
+
+    document.getElementById('regBtn').addEventListener('click', async () => {
+        errorBox.style.display = 'none';
+
+        const user = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const pass  = document.getElementById('password').value;
+        const conf  = document.getElementById('confirmPassword').value;
+
+        if (!user || !email || !pass || !conf) { showError('REQUIRED_FIELDS_EMPTY'); return; }
+        if (pass !== conf) { showError('PASSWORD_MISMATCH'); return; }
+
+        try {
+            const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, pass);
+            await updateProfile(firebaseUser, { displayName: user });
+            await setDoc(doc(db, "users", firebaseUser.uid), {
+                username: user,
+                email: email,
+                role: "User",
+                status: "Active",
+                createdAt: new Date()
+            });
+            window.location.href = "{{ url_for('login_page') }}";
+        } catch (e) {
+            showError(e.code.replace('auth/', ''));
+        }
+    });
+</script>
+
+</body>
+</html>

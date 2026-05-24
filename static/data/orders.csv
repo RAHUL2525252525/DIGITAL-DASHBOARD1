@@ -1,0 +1,5 @@
+order_id,product,quantity,total,status
+1,Phone,2,20000,Delivered
+2,Laptop,1,50000,Pending
+3,motorola,3,72000,Delivered
+4,nothing,4,12000,Pending

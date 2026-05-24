@@ -1,0 +1,6 @@
+user_id,name,email,city,total_orders,total_spent
+U101,Rahul S,rahul@gmail.com,Bangalore,5,12000
+U102,Asha K,asha@gmail.com,Mysore,2,69999
+U103,Vikram P,vikram@gmail.com,Chennai,7,18000
+U104,Neha R,neha@gmail.com,Hyderabad,1,15000
+U105,Arjun M,arjun@gmail.com,Delhi,3,55000

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DMA | Product Intelligence</title>
+
+<!-- DMA Login Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════
+   DMA TOKEN SYSTEM — exact match to login page
+═══════════════════════════════════════════════ */
+:root {
+    --forest-deepest: #060F0C;
+    --forest-deep:    #0A1F1A;
+    --forest-mid:     #132B23;
+    --emerald:        #34D399;
+    --emerald-dim:    #1A8C62;
+    --emerald-lt:     #D1FAE5;
+    --gold:           #A3E635;
+    --gold-dim:       #84cc16;
+    --paper:          #F4F9F6;
+    --paper-2:        #E8F4EE;
+    --ink:            #0A1F1A;
+    --ink-2:          #1F4038;
+    --ink-3:          #5A8C78;
+    --card:           #FFFFFF;
+    --line:           #C5DFD4;
+    --line-dim:       rgba(52,211,153,0.15);
+    --success:        #1A8C62;
+    --success-lt:     #D1FAE5;
+    --danger:         #EF4444;
+    --danger-lt:      #FEE2E2;
+    --text-on-dark:   rgba(255,255,255,0.92);
+    --text-dim:       rgba(255,255,255,0.22);
+    --radius:         8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; min-height: 100%; }
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0;
+    line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════
+   TOP BAR
+═══════════════════════════════════════════════ */
+.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(20px) saturate(1.3);
+    border-bottom: 1px solid var(--line);
+    padding: 0 40px;
+    height: 62px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 20px; overflow: hidden;
+}
+/* Shimmer accent — login .panel-right::before */
+.topbar::before {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--emerald-dim), var(--emerald), var(--gold-dim), var(--emerald));
+    background-size: 200% 100%;
+    animation: shimmer 4s linear infinite;
+}
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+/* Grid lines — login .panel-left::before */
+.topbar::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(52,211,153,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(52,211,153,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridDrift 24s linear infinite;
+    pointer-events: none;
+}
+@keyframes gridDrift {
+    0%   { background-position: 0 0; }
+    100% { background-position: 48px 48px; }
+}
+
+/* Brand */
+.brand {
+    display: flex; align-items: center; gap: 12px;
+    position: relative; z-index: 1; text-decoration: none;
+}
+.brand-mark {
+    width: 36px; height: 36px;
+    border: 1px solid var(--emerald-dim);
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(10% 0%,90% 0%,100% 10%,100% 90%,90% 100%,10% 100%,0% 90%,0% 10%);
+    background: rgba(26,140,98,0.08); flex-shrink: 0;
+}
+.brand-mark span {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--emerald-dim); line-height: 1;
+}
+.brand-text .name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem; font-weight: 600;
+    color: var(--ink); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.brand-text .sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.44rem; color: var(--ink-3);
+    letter-spacing: 0.14em; text-transform: uppercase; margin-top: 1px;
+}
+
+/* Live pill */
+.live-pill {
+    position: relative; z-index: 1;
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 7px 14px; border-radius: 100px;
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.52rem; font-weight: 500;
+    color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.12em;
+    white-space: nowrap; transition: border-color 0.2s;
+}
+.live-pill:hover { border-color: var(--emerald-dim); }
+.pulse-dot {
+    width: 7px; height: 7px; background: var(--emerald); border-radius: 50%;
+    box-shadow: 0 0 8px rgba(52,211,153,0.7);
+    animation: pulse 2s ease-in-out infinite; flex-shrink: 0;
+}
+@keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.45; transform: scale(0.72); }
+}
+
+/* ═══════════════════════════════════════════════
+   CONTENT
+═══════════════════════════════════════════════ */
+.content { padding: 32px 40px 56px; }
+
+@keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Page heading */
+.page-heading {
+    margin-bottom: 26px;
+    opacity: 0; animation: rise 0.7s 0.1s ease forwards;
+}
+.page-kicker {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.5rem; color: var(--emerald-dim);
+    text-transform: uppercase; letter-spacing: 0.22em;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
+}
+.page-kicker::before { content: ''; width: 18px; height: 1px; background: var(--emerald-dim); }
+
+h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem; font-weight: 700;
+    color: var(--ink); line-height: 1; letter-spacing: -0.01em;
+    /* Remove original ::before pseudo-element */
+    display: block;
+}
+h1 em { font-style: italic; color: var(--emerald-dim); }
+
+/* ═══════════════════════════════════════════════
+   GRID — same class, same auto-fit behaviour
+═══════════════════════════════════════════════ */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+/* ═══════════════════════════════════════════════
+   CARD — white surface, DMA border & accent
+═══════════════════════════════════════════════ */
+.card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 22px 20px 18px;
+    border-radius: var(--radius);
+    position: relative; overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+/* Subtle gradient shimmer — like login card hover zone */
+.card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(52,211,153,0.04) 100%);
+    pointer-events: none;
+}
+.card:hover {
+    box-shadow: 0 6px 24px rgba(10,31,26,0.09);
+    transform: translateY(-3px);
+}
+
+/* Product name inside card */
+.card h3 {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.5rem; font-weight: 500;
+    color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: 0.18em;
+    margin-bottom: 10px;
+    padding-right: 60px; /* space for badge */
+}
+
+/* Price — Cormorant Garamond serif */
+.price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem; font-weight: 700;
+    color: var(--ink); line-height: 1;
+    letter-spacing: -0.01em;
+}
+
+.meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.52rem; color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-top: 8px;
+}
+
+.revenue {
+    margin-top: 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.54rem; color: var(--emerald-dim);
+    font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em;
+    display: flex; align-items: center; gap: 6px;
+}
+.revenue::before { content: '→'; font-weight: 400; opacity: 0.7; }
+
+/* ── Badge — LOW STOCK ── */
+.badge {
+    position: absolute; top: 18px; right: 18px;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.44rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    background: var(--danger-lt);
+    color: var(--danger);
+    border: 1px solid rgba(239,68,68,0.12);
+}
+.badge::before {
+    content: ''; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--danger);
+    flex-shrink: 0;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ── KPI row card variants ── */
+.kpi-row .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.kpi-row .card:nth-child(1)::before { background: linear-gradient(90deg, var(--emerald-dim), var(--emerald)); }
+.kpi-row .card:nth-child(2)::before { background: linear-gradient(90deg, var(--gold-dim), var(--gold)); }
+.kpi-row .card:nth-child(3)::before { background: linear-gradient(90deg, #3B82F6, #60A5FA); }
+
+/* Revenue KPI value colour */
+#totalRevenue { color: var(--emerald-dim) !important; }
+
+/* Lead performer — smaller mono label feel */
+#topProduct {
+    font-family: 'DM Mono', monospace !important;
+    font-size: 1rem !important;
+    text-transform: uppercase;
+    color: var(--ink-2) !important;
+    letter-spacing: 0.06em;
+}
+
+/* ═══════════════════════════════════════════════
+   FOOTER STATUS BAR
+═══════════════════════════════════════════════ */
+.sys-bar {
+    position: sticky; bottom: 0;
+    background: var(--forest-deep);
+    padding: 10px 40px;
+    display: flex; flex-wrap: wrap;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.48rem; color: var(--text-dim);
+    border-top: 1px solid rgba(52,211,153,0.1);
+    z-index: 90;
+}
+.sys-bar::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--emerald-dim), transparent);
+    opacity: 0.35;
+}
+.sys-seg { padding: 0 14px; border-right: 1px solid rgba(52,211,153,0.08); }
+.sys-seg:first-child { padding-left: 0; }
+.sys-seg:last-child  { border-right: none; margin-left: auto; }
+.sys-seg b           { color: var(--emerald); font-weight: 500; }
+.sys-seg .ok         { color: #34D399; }
+
+/* Product grid animation */
+.grid:not(.kpi-row) {
+    opacity: 0;
+    animation: rise 0.7s 0.35s ease forwards;
+}
+.kpi-row {
+    opacity: 0;
+    animation: rise 0.7s 0.2s ease forwards;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .topbar  { padding: 0 20px; }
+    .content { padding: 20px 16px 48px; }
+    .grid    { grid-template-columns: 1fr; gap: 12px; }
+    .kpi-row { margin-bottom: 20px !important; }
+    .price   { font-size: 1.9rem; }
+    .sys-bar { padding: 10px 20px; }
+}
+@media (max-width: 480px) {
+    h1 { font-size: 1.9rem; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ════ TOP BAR ════ -->
+<header class="topbar">
+    <a class="brand" href="#">
+        <div class="brand-mark"><span>D</span></div>
+        <div class="brand-text">
+            <div class="name">DMA Platform</div>
+            <div class="sub">Digital Marketing Analytics</div>
+        </div>
+    </a>
+    <div class="live-pill">
+        <span class="pulse-dot"></span>
+        Live · Bengaluru Zone · 12ms
+    </div>
+</header>
+
+<!-- ════ MAIN CONTENT ════ -->
+<div class="content">
+
+    <!-- Page heading -->
+    <div class="page-heading">
+        <div class="page-kicker">Catalog · Real-time</div>
+        <h1>Product <em>Intelligence</em></h1>
+    </div>
+
+    <!-- KPI ROW — same IDs, zero JS change -->
+    <div class="grid kpi-row" style="margin-bottom:24px;">
+        <div class="card">
+            <h3>Catalog Depth</h3>
+            <div class="price" id="totalProducts">0</div>
+        </div>
+        <div class="card">
+            <h3>Gross Revenue</h3>
+            <div class="price" id="totalRevenue">$0</div>
+        </div>
+        <div class="card">
+            <h3>Lead Performer</h3>
+            <div class="price" id="topProduct" style="font-size:1.125rem;text-transform:uppercase;">-</div>
+        </div>
+    </div>
+
+    <!-- PRODUCT GRID — same id, zero JS change -->
+    <div class="grid" id="productGrid"></div>
+
+</div>
+
+<!-- ════ FOOTER STATUS BAR ════ -->
+<div class="sys-bar">
+    <div class="sys-seg">SYS <b>v2.4.1</b></div>
+    <div class="sys-seg">STATUS <b class="ok">ONLINE</b></div>
+    <div class="sys-seg">TLS <b>1.3</b></div>
+    <div class="sys-seg">LATENCY <b>12ms</b></div>
+    <div class="sys-seg">NODES <b>247</b></div>
+    <div class="sys-seg">LAST SYNC <b>00:00:42 AGO</b></div>
+</div>
+
+<!-- ════ ALL ORIGINAL JS — COMPLETELY UNCHANGED ════ -->
+<script>
+// --- STATE & LOGIC PRESERVED ---
+const State = {
+    products:[]
+};
+
+async function loadCSV(){
+    try{
+        const res = await fetch(`/static/data/products.csv`);
+        if(!res.ok){
+            State.products = [];
+            render();
+            return;
+        }
+        const text = await res.text();
+        State.products = parseCSV(text);
+        render();
+    }catch(e){
+        State.products = [];
+        render();
+    }
+}
+
+function parseCSV(text){
+    const rows = text.trim().split("\n");
+    if(rows.length < 2) return [];
+    const headers = rows[0].split(",").map(h=>h.trim());
+    return rows.slice(1)
+        .filter(r => r.trim() !== "")
+        .map(r=>{
+            const values = r.split(",");
+            let obj = {};
+            headers.forEach((h,i)=>{
+                obj[h] = (values[i] || "").trim();
+            });
+            return obj;
+        });
+}
+
+function render(){
+    const grid = document.getElementById("productGrid");
+    grid.innerHTML = "";
+
+    let totalRevenue = 0;
+    let top = {name:"", value:0};
+
+    (State.products || []).forEach(p=>{
+        const price = Number(p.price || 0);
+        const sales = Number(p.sales || 0);
+        const revenue = price * sales;
+        totalRevenue += revenue;
+
+        if(revenue > top.value){
+            top = {name: p.product_name, value: revenue};
+        }
+
+        grid.innerHTML += `
+        <div class="card">
+            <h3>${p.product_name || "Unknown Product"}</h3>
+            <div class="price">$${price.toLocaleString()}</div>
+            <div class="meta">Velocity: ${sales.toLocaleString()} units</div>
+            <div class="revenue">
+                Contrib: $${revenue.toLocaleString()}
+            </div>
+            ${sales < 10 ? `<div class="badge">LOW STOCK</div>` : ``}
+        </div>`;
+    });
+
+    document.getElementById("totalProducts").innerText = (State.products || []).length;
+    document.getElementById("totalRevenue").innerText = "$" + totalRevenue.toLocaleString();
+    document.getElementById("topProduct").innerText = top.name || "-";
+}
+
+loadCSV();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADMIN | CONTROL PANEL</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --bg-deep: #050505;
+    --card: #111;
+    --neon: #C3FF00;
+    --white: #fff;
+    --danger: #ff4b4b;
+}
+
+body {
+    margin: 0;
+    background: var(--bg-deep);
+    color: var(--white);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+/* HEADER */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: 2px solid var(--white);
+}
+
+.header h1 {
+    font-family: 'Syncopate', sans-serif;
+    letter-spacing: 3px;
+    color: var(--neon);
+}
+
+.logout {
+    padding: 8px 16px;
+    border: 1px solid var(--danger);
+    background: transparent;
+    color: var(--danger);
+    cursor: pointer;
+}
+.logout:hover { background: var(--danger); color: #fff; }
+
+/* GRID */
+.grid {
+    padding: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+    gap: 20px;
+}
+
+.card {
+    background: var(--card);
+    padding: 25px;
+    border: 2px solid var(--white);
+    box-shadow: 8px 8px 0 var(--neon);
+    text-transform: uppercase;
+}
+
+.card h3 {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: var(--neon);
+}
+
+/* ADD USER */
+.add-user {
+    padding: 30px;
+}
+
+input {
+    padding: 10px;
+    margin-right: 10px;
+    background: black;
+    border: 1px solid #333;
+    color: white;
+}
+
+.add-btn {
+    padding: 10px 20px;
+    background: var(--neon);
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+.add-btn:hover { background: #fff; }
+
+/* TABLE */
+.table-container {
+    padding: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #333;
+    padding: 12px;
+    text-align: left;
+    font-size: 0.8rem;
+}
+
+th {
+    background: #000;
+    color: var(--neon);
+}
+
+tr:hover {
+    background: rgba(195,255,0,0.05);
+}
+
+.btn {
+    padding: 6px 10px;
+    border: 1px solid var(--neon);
+    background: transparent;
+    color: var(--neon);
+    cursor: pointer;
+    font-size: 0.7rem;
+}
+.btn:hover { background: var(--neon); color: black; }
+
+/* LOG */
+.log {
+    padding: 20px;
+    border-top: 1px solid #333;
+    font-family: monospace;
+    font-size: 0.7rem;
+}
+
+/* STATUS */
+.status {
+    padding: 10px 30px;
+    font-size: 0.75rem;
+    color: #aaa;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>ADMIN_PANEL</h1>
+    <button class="logout" onclick="logout()">LOGOUT</button>
+</div>
+
+<div class="status" id="status">SYSTEM_READY</div>
+
+<!-- STATS -->
+<div class="grid">
+    <div class="card">
+        <h3>Total Users</h3>
+        <p id="totalUsers">0</p>
+    </div>
+    <div class="card">
+        <h3>Total Orders</h3>
+        <p id="totalOrders">--</p>
+    </div>
+    <div class="card">
+        <h3>Total Products</h3>
+        <p id="totalProducts">--</p>
+    </div>
+</div>
+
+<!-- ADD USER -->
+<div class="add-user">
+    <input id="newUserEmail" placeholder="User Email">
+    <input id="newUserName" placeholder="User Name">
+    <button class="add-btn" onclick="addUser()">ADD USER</button>
+</div>
+
+<!-- TABLE -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+    </table>
+</div>
+
+<div class="log" id="log">> ADMIN SYSTEM READY</div>
+
+<script>
+
+/* STATUS */
+function setStatus(msg) {
+    document.getElementById("status").innerText = msg;
+}
+
+/* LOAD USERS */
+async function loadUsers() {
+    try {
+        setStatus("LOADING_USERS...");
+
+        const res = await fetch("/admin/users", {
+            credentials: "include"
+        });
+
+        if (!res.ok) throw new Error("Unauthorized");
+
+        const data = await res.json();
+
+        const tbody = document.getElementById("userTable");
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3">NO USERS FOUND</td></tr>`;
+        }
+
+        data.forEach(user => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>${user.email}</td>
+                <td>${user.name}</td>
+                <td>
+                    <button class="btn" onclick="deleteUser('${user.email}')">DELETE</button>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById("totalUsers").innerText = data.length;
+        setStatus("USERS_LOADED");
+
+    } catch (err) {
+        setStatus("ERROR_LOADING_USERS");
+        console.error(err);
+    }
+}
+
+/* ADD USER */
+async function addUser() {
+    const email = document.getElementById("newUserEmail").value.trim();
+    const name = document.getElementById("newUserName").value.trim();
+
+    if (!email || !name) {
+        alert("ENTER ALL FIELDS");
+        return;
+    }
+
+    await fetch("/admin/add-user", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        credentials: "include",
+        body: JSON.stringify({email, name})
+    });
+
+    log("> USER_ADDED");
+    loadUsers();
+}
+
+/* DELETE USER */
+async function deleteUser(email) {
+    await fetch("/admin/delete-user", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        credentials: "include",
+        body: JSON.stringify({email})
+    });
+
+    log("> USER_DELETED");
+    loadUsers();
+}
+
+/* LOG */
+function log(msg) {
+    document.getElementById("log").innerText =
+        `> ${new Date().toLocaleTimeString()} : ${msg}`;
+}
+
+/* LOGOUT */
+function logout() {
+    fetch("/admin-logout", {
+        credentials: "include"
+    }).finally(() => {
+        window.location.href = "/login";
+    });
+}
+
+/* INIT */
+loadUsers();
+
+</script>
+
+</body>
+</html>
